@@ -1,0 +1,29 @@
+contact_force_adapter:
+  ros__parameters:
+    publish_rate_hz: 100.0
+    input_timeout_sec: 0.20
+    # 2026-11-07 (v2 goal 1-2): sensor 1's cp / contact_state arrive ~10 / ~27 Hz
+    # with gaps up to ~1.1 s (wrench_corrected ~96 Hz). The wrench must stay
+    # fresh (input_timeout_sec); cp and state may be held this long. A held
+    # contact=true also needs the fresh corrected force >= held_state_min_force_n
+    # (= REACT contact_force_threshold 1.5 N). Set both holds to 0.20 to restore
+    # the previous behaviour.
+    point_hold_sec: 1.0
+    state_hold_sec: 1.0
+    held_state_min_force_n: 1.5
+
+    # The vision intent estimator is not connected yet. Disable this publisher
+    # when the real probability topic is available.
+    publish_manual_intent: true
+    manual_compliance_probability: 1.0
+
+    # Validate the physical push direction in dry-run/RViz before hardware use.
+    # Change to -1.0 only if the measured reaction wrench points opposite to
+    # the desired compliant motion.
+    force_sign: 1.0
+
+    target_point_frame: "forearm_link"
+    target_wrench_frame: "base_link"
+    output_contact_point_topic: "/admittance_rmp/contact_point"
+    output_wrench_topic: "/admittance_rmp/wrench"
+    output_intent_topic: "/worker_intent/compliance_probability"

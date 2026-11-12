@@ -1,0 +1,51 @@
+jsshape_sensor1_contactsensing:
+  ros__parameters:
+    filename: "jsshape_sensor1_path"
+
+    # Y2FT_AQ FTGetMain publishes geometry_msgs/msg/WrenchStamped here.
+    # The launch file supplies contact_sensor_topic from launch args.
+    use_wrench_tf: true
+    contact_frame: "ur10_jsshape_supporter1"
+    wrench_source_frame: "ur10_jsshape_wrench1"
+    wrench_tf_timeout_sec: 0.05
+
+    # The surface STL shares the visual STL's CAD origin. It is therefore
+    # loaded unchanged in ur10_jsshape_supporter1 and follows that link through TF.
+    mesh_transformation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 1.0
+      - 0.0
+
+jsshape_sensor2_contactsensing:
+  ros__parameters:
+    filename: "jsshape_sensor2_path"
+
+    use_wrench_tf: true
+    contact_frame: "ur10_jsshape_supporter2"
+    wrench_source_frame: "ur10_jsshape_wrench2"
+    wrench_tf_timeout_sec: 0.05
+
+    # The surface STL shares the visual STL's CAD origin. It is therefore
+    # loaded unchanged in ur10_jsshape_supporter2 and follows that link through TF.
+    mesh_transformation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 1.0
+      - 0.0

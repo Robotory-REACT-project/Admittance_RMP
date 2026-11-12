@@ -1,0 +1,14 @@
+admittance_preview:
+  ros__parameters:
+    publish_rate_hz: 125.0
+    virtual_mass: [3.0, 3.0, 3.0]
+    contact_damping: [45.0, 45.0, 45.0]
+    contact_metric: [200.0, 200.0, 200.0]
+    enter_force_n: 2.0
+    release_force_n: 1.0
+    transition_sec: 0.20
+    input_timeout_sec: 0.25
+    release_stop_damping: 8.0
+    max_joint_accel_rad_s2: 1.0
+    max_joint_velocity_rad_s: 0.30
+    root_regularization: 1.0e-4

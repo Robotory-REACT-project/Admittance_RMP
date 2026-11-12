@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot name="react_intrinsic_JSshape">
+  <!--
+    The UR robot_state_publisher already owns base/base_link/forearm_link.
+    Declare forearm_link only as this fixed-only model's root; this publisher
+    emits no transform for the root and therefore joins the existing robot TF
+    tree without publishing a second base_link.
+
+    Mount geometry recovered from RMP_prox's
+    test_ur10_sensor_mount_geometry.cpp (2026-09-21).
+  -->
+  <link name="forearm_link"/>
+
+  <link name="ur10_jsshape_base"/>
+
+  <joint name="forearm_to_ur10_jsshape_base" type="fixed">
+    <origin xyz="-0.382 0.0 0.048" rpy="-1.57079632679 0 3.14159265359"/>
+    <parent link="forearm_link"/>
+    <child link="ur10_jsshape_base"/>
+  </joint>
+
+  <!--
+    Common rigid-assembly frame. Its pose is fixed by the recovered robot
+    mounting geometry above; do not anchor this model to base_link.
+  -->
+  <link name="ur10_jsshape_assembly"/>
+
+  <joint name="ur10_jsshape_base_to_assembly" type="fixed">
+    <origin xyz="0.0 0.0 -0.0705" rpy="0 0 3.14159265359"/>
+    <parent link="ur10_jsshape_base"/>
+    <child link="ur10_jsshape_assembly"/>
+  </joint>
+
+  <!--
+    Sensor 1 supporter (top). Its pose is relative to the common assembly,
+    so the visual mesh, contact surface frame, and wrench frame stay rigidly
+    attached when the assembly is moved.
+  -->
+  <link name="ur10_jsshape_supporter1">
+    <visual>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://REACT_intrinsic/meshes/JSshape.stl" scale="1 1 1"/>
+      </geometry>
+      <material name="supporter1_gray">
+        <color rgba="0.72 0.75 0.80 1.0"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="ur10_jsshape_assembly_to_supporter1" type="fixed">
+    <origin xyz="0.0 0.0 0.141" rpy="3.14159265359 0 0"/>
+    <parent link="ur10_jsshape_assembly"/>
+    <child link="ur10_jsshape_supporter1"/>
+  </joint>
+
+  <!--
+    Sensor 2 supporter (bottom) is the reference member of the rectangle.
+  -->
+  <link name="ur10_jsshape_supporter2">
+    <visual>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://REACT_intrinsic/meshes/JSshape.stl" scale="1 1 1"/>
+      </geometry>
+      <material name="supporter2_gray">
+        <color rgba="0.72 0.75 0.80 1.0"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="ur10_jsshape_assembly_to_supporter2" type="fixed">
+    <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+    <parent link="ur10_jsshape_assembly"/>
+    <child link="ur10_jsshape_supporter2"/>
+  </joint>
+</robot>

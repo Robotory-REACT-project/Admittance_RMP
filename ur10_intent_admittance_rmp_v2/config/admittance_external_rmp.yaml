@@ -1,0 +1,49 @@
+admittance_external_rmp:
+  ros__parameters:
+    publish_rate_hz: 125.0
+
+    # Supervised stage-1 response tuning. These are not validated human-contact
+    # limits and do not make the robot a certified collaborative system.
+    virtual_mass: [3.0, 3.0, 3.0]
+    # Lower damping and higher metric authority make the contact leaf respond
+    # more visibly against the retained global damping RMP.
+    contact_damping: [25.0, 25.0, 25.0]
+    contact_metric: [300.0, 300.0, 300.0]
+    # Initial supervised hardware integration threshold. Contact localization
+    # itself starts at 1.5 N, leaving margin above its detection threshold.
+    enter_force_n: 4.0
+    release_force_n: 2.0
+    enter_probability: 0.60
+    release_probability: 0.35
+    # Cubic-smoothstep engagement/release ramp. Shortened from 0.60 s after the
+    # first direction-preserving hardware trial showed ample speed margin.
+    transition_sec: 0.30
+
+    joint_state_timeout_sec: 0.10
+    wrench_timeout_sec: 0.25
+    intent_timeout_sec: 0.50
+    max_force_n: 30.0
+    # Preserve the measured force direction by limiting task acceleration
+    # before the Jacobian pullback.
+    # Supervised response experiment: doubled from 3.0 to 6.0 m/s^2. With
+    # virtual_mass=3 kg, task-space saturation now begins near 18 N instead of
+    # 9 N. Per-joint and final command guards remain independently active.
+    max_task_accel_m_s2: 6.0
+    # Lateral contact motion is dominated by shoulder_pan because the contact
+    # point lies on the forearm. Give that joint additional authority while
+    # retaining the previous 1.5 rad/s^2 ceiling for vertical-motion joints.
+    # The limiter applies one common scale factor, so qdd direction is kept.
+    max_joint_accel_per_joint_rad_s2: [2.5, 1.5, 1.5, 1.5, 1.5, 1.5]
+    # Damped spectral inverse for contact Jacobian singular directions.
+    singular_value_damping_ratio: 0.05
+    # If the reachable contact-point acceleration no longer points sufficiently
+    # along the requested force direction, suppress the leaf instead of moving
+    # in a misleading orthogonal direction.
+    minimum_task_alignment_cosine: 0.50
+    eigenvalue_floor: 1.0e-8
+
+    joint_state_topic: "/UR10_right/joint_states"
+    contact_point_topic: "/admittance_rmp/contact_point"
+    wrench_topic: "/admittance_rmp/wrench"
+    intent_probability_topic: "/worker_intent/compliance_probability"
+    output_prefix: "/escape_on/external_rmp/admittance"

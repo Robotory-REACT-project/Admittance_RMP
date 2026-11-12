@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot name="react_intrinsic_JSshape">
+  <link name="map"/>
+
+  <link name="base_link"/>
+
+  <joint name="map_to_base_link" type="fixed">
+    <parent link="map"/>
+    <child link="base_link"/>
+  </joint>
+
+  <!--
+    Common rigid-assembly frame. Change only this joint when the complete
+    two-supporter rectangle must be translated or rotated in base_link.
+  -->
+  <link name="jsshape_assembly"/>
+
+  <joint name="base_link_to_jsshape_assembly" type="fixed">
+    <origin xyz="0.0 0.0 -0.0705" rpy="0 0 3.14159265359"/>
+    <parent link="base_link"/>
+    <child link="jsshape_assembly"/>
+  </joint>
+
+  <!--
+    Sensor 1 supporter (top). Its pose is relative to the common assembly,
+    so the visual mesh, contact surface frame, and wrench frame stay rigidly
+    attached when the assembly is moved.
+  -->
+  <link name="supporter1">
+    <visual>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://REACT_intrinsic/meshes/JSshape.stl" scale="1 1 1"/>
+      </geometry>
+      <material name="supporter1_gray">
+        <color rgba="0.72 0.75 0.80 1.0"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="jsshape_assembly_to_supporter1" type="fixed">
+    <origin xyz="0.0 0.0 0.141" rpy="3.14159265359 0 0"/>
+    <parent link="jsshape_assembly"/>
+    <child link="supporter1"/>
+  </joint>
+
+  <!--
+    Sensor 2 supporter (bottom) is the reference member of the rectangle.
+  -->
+  <link name="supporter2">
+    <visual>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://REACT_intrinsic/meshes/JSshape.stl" scale="1 1 1"/>
+      </geometry>
+      <material name="supporter2_gray">
+        <color rgba="0.72 0.75 0.80 1.0"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="jsshape_assembly_to_supporter2" type="fixed">
+    <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+    <parent link="jsshape_assembly"/>
+    <child link="supporter2"/>
+  </joint>
+</robot>

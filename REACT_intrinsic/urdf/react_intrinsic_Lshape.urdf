@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot name="react_intrinsic_Lshape">
+  <link name="map"/>
+
+  <link name="base_link">
+    <visual>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 3.14"/>
+      <geometry>
+        <mesh filename="package://REACT_intrinsic/meshes/lshape.STL" scale="1 1 1"/>
+      </geometry>
+      <material name="test_surface_gray">
+        <color rgba="0.72 0.75 0.80 1.0"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="map_to_base_link" type="fixed">
+    <parent link="map"/>
+    <child link="base_link"/>
+  </joint>
+
+  <!--
+    The calibrated range messages use proximity1 and proximity2.
+    Range measurements are visualized along the +X axis of each sensor frame.
+  -->
+  <link name="proximity1"/>
+
+  <joint name="base_to_proximity1" type="fixed">
+    <parent link="base_link"/>
+    <child link="proximity1"/>
+    <!-- Sensor 1: top/horizontal face; point sensor +X toward base_link +Z. -->
+    <origin xyz="0 0 0.019" rpy="0 -1.57079632679 0"/>
+  </joint>
+
+  <link name="proximity2"/>
+
+  <joint name="base_to_proximity2" type="fixed">
+    <parent link="base_link"/>
+    <child link="proximity2"/>
+    <!-- Sensor 2: right/vertical face; point sensor +X toward base_link +Y. -->
+    <origin xyz="0 0.068 -0.0705" rpy="0 0 1.57079632679"/>
+  </joint>
+</robot>

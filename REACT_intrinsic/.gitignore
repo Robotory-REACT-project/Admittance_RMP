@@ -1,0 +1,8 @@
+__pycache__/
+*.py[cod]
+
+# OS-generated metadata
+desktop.ini
+
+# Runtime measurement output
+sensor_data_logs/

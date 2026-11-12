@@ -1,0 +1,1038 @@
+# UR10 RMPflow RViz Parameters
+#
+# v2 STAGE 5 (ur10_intent_admittance_rmp_v2): goal 1 = target + {avoidance | admittance}.
+# Derived from params_admittance_stage4.yaml (intent-gated avoidance + latch) with
+# the production targets restored: position target (production metric 1e5/2.5e4)
+# and SO(3) orientation target (1e4), as in the production UR10 avoidance launch.
+# Both targets are scaled by the contact gate (floor below) while admittance is
+# engaged, and return to full strength (back to the goal) after release.
+# Damping stays at the stage-1/4 values (inertia 10) that let compliance work.
+
+rmpflow_controller:
+  ros__parameters:
+    # Real-time default. Use casadi_rmp2 only for reference/equivalence checks.
+    solver_backend: "pinocchio_direct"
+
+    # RMP solver common
+    root_solve_offset: 0.001
+    casadi_rmp2_max_obstacles: 24
+    casadi_rmp2_jit: true
+
+    # Collision RMP
+    # lula_canonical preserves the existing production/site formula.
+    # Use paper_gds only in the dedicated stability-validation profile first.
+    collision_policy: "lula_canonical"
+    collision_rmp_margin: 0.0
+    # Extra clearance for moving-body / moving-body sphere pairs.  The
+    # self-collision graph node stays disabled for existing launch profiles.
+    self_collision_margin: 0.01
+    # collision_rmp_damping_gain: 100.0
+    collision_rmp_damping_gain: 20.0
+    collision_rmp_damping_std_dev: 0.01
+    collision_rmp_damping_robustness_eps: 0.1
+    collision_rmp_damping_velocity_gate_length_scale: 0.03
+    # collision_rmp_repulsion_gain: 100.0
+    collision_rmp_repulsion_gain: 3000.0
+    collision_rmp_repulsion_std_dev: 0.05
+    collision_rmp_metric_modulation_radius: 0.2
+    collision_rmp_metric_modulation_power: 2.0
+    collision_rmp_far_field_plateau_start: 0.0
+    collision_rmp_far_field_fade_width: 0.05
+    # collision_rmp_metric_scalar: 0.0
+    collision_rmp_metric_scalar: 100000.0
+    # collision_rmp_metric_exploder_std_dev: 0.01
+    # collision_rmp_metric_exploder_eps: 0.1
+    collision_rmp_metric_exploder_std_dev: 0.02
+    collision_rmp_metric_exploder_eps: 1.5
+    collision_rmp_gds_clearance_smoothing: 0.0001
+    collision_rmp_gds_metric_velocity_floor: 0.5
+    collision_rmp_gds_metric_velocity_scale: 0.03
+    collision_rmp_gds_damping_velocity_scale: 0.03
+    # Target RMP
+
+    # vel
+    target_rmp_accel_p_gain: 40.0
+    target_rmp_accel_d_gain: 120.0
+
+    # Position
+    # target_rmp_accel_p_gain: 80.0
+    # target_rmp_accel_d_gain: 120.0
+    target_rmp_accel_norm_eps: 0.08
+    target_rmp_metric_alpha_length_scale: 0.01
+    target_rmp_min_metric_alpha: 0.1
+    # Stage-2 target/admittance arbitration trial. Keep the canonical target
+    # P/D acceleration unchanged, but reduce its metric authority so an active
+    # contact leaf can produce visible compliance near the goal.
+    target_rmp_max_metric_scalar: 100000.0
+    target_rmp_min_metric_scalar: 25000.0
+    target_rmp_proximity_metric_boost_scalar: 2.0
+    target_rmp_proximity_metric_boost_length_scale: 0.02
+
+    # Axis Target RMP
+    axis_target_rmp_accel_p_gain: 80.0
+    axis_target_rmp_accel_d_gain: 80.0
+    axis_target_rmp_metric_scalar: 0.0 #10000.0
+    axis_target_rmp_proximity_metric_boost_scalar: 10.0
+    axis_target_rmp_proximity_metric_boost_length_scale: 0.01
+    # Single SO(3) orientation policy. Kd=2*sqrt(Kp) is critically damped.
+    so3_orientation_rmp_accel_p_gain: 64.0
+    so3_orientation_rmp_accel_d_gain: 16.0
+    so3_orientation_rmp_metric_scalar: 10000.0
+
+    # Wrist-only Axis Target RMP
+    wrist_axis_target_rmp_accel_p_gain: 100.0
+    wrist_axis_target_rmp_accel_d_gain: 50.0
+    wrist_axis_target_rmp_metric_scalar: 0.0
+    wrist_axis_target_rmp_proximity_metric_boost_scalar: 1.0
+    wrist_axis_target_rmp_proximity_metric_boost_length_scale: 0.01
+
+    # Damping RMP
+    # vel
+    # Keep the validated Stage-1 damping baseline so Stage 2 measures the
+    # effect of enabling target/orientation/joint-limit policies, not a hidden
+    # return to the old high-damping configuration.
+    damping_rmp_accel_d_gain: 60.0
+    damping_rmp_metric_scalar: 0.0
+
+    # Position
+    # damping_rmp_accel_d_gain: 80.0
+    # damping_rmp_metric_scalar: 100.0
+
+    damping_rmp_inertia: 10.0
+
+    # C-space Target RMP
+    cspace_target_metric_scalar: 1000.0
+    cspace_target_position_gain: 5.0
+    cspace_target_damping_gain: 30.0
+    cspace_target_robust_position_term_thresh: 0.5
+    cspace_target_inertia: 0.0
+
+    # Joint Limit RMP
+    joint_limit_policy: "lula_canonical"
+    joint_limit_metric_scalar: 1000.0
+    joint_limit_metric_length_scale: 0.1
+    joint_limit_metric_exploder_eps: 0.001
+    joint_limit_metric_velocity_gate_length_scale: 0.01
+    joint_limit_accel_damper_gain: 100.0
+    joint_limit_accel_potential_gain: 100.0
+    joint_limit_accel_potential_exploder_eps: 0.001
+    joint_limit_accel_potential_exploder_length_scale: 0.01
+    joint_limit_gds_center_fraction: 0.5
+    joint_limit_gds_domain_epsilon: 0.000000001
+
+    # Joint Velocity Cap RMP
+    # 2026-11-07 (v2 goal 1-2): keep the RMP's own joint speed below the
+    # 0.25 rad/s command guard so the return after release is not clipped by
+    # the guard (clipping caused pan overshoot 10-33 %). Damping starts at
+    # 0.18 rad/s, barrier at 0.24 rad/s. Was max 1.0 / region 0.5.
+    # NOTE: the fork launch overrides these two with its own launch defaults
+    # (2.4336 / 1.2168); stage 5 passes 0.24 / 0.06 from
+    # ur10_admittance_hardware_stages.launch.py. Values here document intent.
+    joint_velocity_cap_max_velocity: 0.24
+    joint_velocity_cap_velocity_damping_region: 0.06
+    joint_velocity_cap_damping_gain: 500.0
+    joint_velocity_cap_metric_weight: 100.0
+
+    # Command limits
+    max_joint_accel: 10.0
+    preserve_joint_accel_direction: true
+    # max_joint_accel: 1.5
+    command_guard_max_velocity_rad_s: 1.0
+    # Separate measured-to-command tracking corridor from the per-cycle slew cap.
+    command_guard_max_following_error_rad: 0.02
+    command_guard_velocity_slew_enabled: false
+    command_guard_max_accel_rad_s2: 10.0
+    # command_guard_max_velocity_rad_s: 0.5
+    predictive_joint_limit_guard: true
+
+
+
+    control_rate: 200.0
+    # Disabled in normal runs. The rate benchmark enables this low-rate topic.
+    publish_control_timing_debug: false
+    control_timing_debug_topic: "/rmp_control_timing"
+    control_timing_publish_rate: 10.0
+    estimate_velocity_in_controller: false
+    controller_velocity_filter_alpha: 0.5
+    use_synced_input_velocity_filter: false
+    synced_input_velocity_filter_type: "alpha-beta"
+    synced_input_velocity_filter_alpha: 0.7
+    synced_input_velocity_filter_beta: 0.04
+    synced_input_velocity_ratio_tolerance: 0.05
+    synced_input_velocity_max_raw_rad_s: 6.0
+    synced_input_velocity_position_step_margin_rad: 0.01
+    synced_input_velocity_max_output_rad_s: 2.0
+    use_velocity_feedback_in_solver: true
+    measured_position_feedback_blend: 1.0
+    measured_velocity_feedback_blend: 0.25
+    # Match the production B1 feedback condition. The launch-level defaults
+    # also enforce observer ON and blend 1.00/0.25; these copied values are
+    # kept consistent so the experiment has no hidden configuration mismatch.
+    latency_compensation_enabled: true
+    latency_compensation_delay_sec: 0.118
+    latency_compensation_position_gain: 1.0
+    latency_compensation_velocity_gain: 1.0
+    latency_compensation_max_position_correction_rad: 0.05
+    latency_compensation_max_velocity_correction_rad_s: 0.50
+    latency_compensation_max_state_age_sec: 0.04
+    latency_compensation_activation_ramp_sec: 0.25
+    publish_latency_compensation_debug: false
+    latency_compensation_debug_topic: "/rmp_latency_compensation"
+    latency_compensation_debug_rate: 20.0
+    # Stage-2 experimental fork only. The target natural pair is generated
+    # inside the controller from the exact q_ctrl/qd_ctrl passed to the root
+    # solve. Only this scalar activation crosses a ROS subscription boundary.
+    # Stage 5: targets weakened by contact activation (floor below).
+    internal_contact_target_gate_enabled: true
+    internal_contact_target_gate_topic: "/admittance_rmp/activation"
+    # Keep a non-negligible restoring metric during contact. The former 1%
+    # floor allowed the delayed position loop to outrun the measured state in
+    # closed-loop dry-run; 5% is the first conservative hardware candidate.
+    # With the production target metric (2.5e4..1e5) this gives the same
+    # contact-time target authority as Stage 2 (0.05 x 100..500 = 5..25).
+    # stage 6 GM rev 2 (2026-11-07, run 9 vertical vibration): keep a small isotropic
+    # target metric during contact (was 0 = targets off). The push projection removes
+    # the push direction, so this floor no longer resists pushes; it stops the full-
+    # authority target from saturating the wrist at the speed cap (offline: cap time on
+    # vertical pushes 16 % -> 1-7 %, compliance >= stage 5, orientation still held).
+    internal_contact_target_metric_floor: 0.00025
+    internal_contact_target_activation_timeout_sec: 0.20
+    internal_contact_target_key: "target_gated"
+    # Final Stage-2 candidate: contact geometry and the admittance natural pair
+    # are evaluated inside the controller from this same q_ctrl/qd_ctrl cycle.
+    # Only contact point, base-frame force, and intent probability enter over ROS.
+    internal_admittance_enabled: true
+    internal_admittance_contact_point_topic: "/admittance_rmp/contact_point"
+    internal_admittance_wrench_topic: "/admittance_rmp/wrench"
+    internal_admittance_intent_topic: "/worker_intent/compliance_probability"
+    internal_admittance_key: "admittance"
+    internal_admittance_virtual_mass: [3.0, 3.0, 3.0]
+    internal_admittance_damping: [25.0, 25.0, 25.0]
+    internal_admittance_metric: [1200.0, 1200.0, 1200.0]  # was 300 (2026-11-06: compliance vs damping balance)
+    # v2 goal 1-2 (2026-11-06): near the base axis the cover can move along the arm-plane
+    # normal only through shoulder_pan (short lever). Raise the admittance metric along that
+    # direction by clamp((reference/lever)^2, 1, max) -> only the pan entry of the joint-space
+    # admittance metric grows. false = exactly the goal-1 behaviour.
+    internal_admittance_base_lever_compensation_enabled: true
+    internal_admittance_base_lever_reference_m: 0.28
+    internal_admittance_base_lever_max_factor: 20.0
+    # stage 6 (GM): RMP-consistent contact arbitration (see contact_arbitration.hpp).
+    # Offline replay of run 8: compliance positive on every push, orientation held
+    # (7-15 deg vs 12-48 deg), faster return; forward/vertical pushes slightly stiffer.
+    internal_admittance_base_lever_unreachable_m: 0.01   # normal weight -> 0 as lever -> 0
+    internal_admittance_alignment_gate_enabled: false    # replaces the hard rejection
+    internal_admittance_authority_source: "force"
+    internal_admittance_force_authority_low_n: 2.0
+    internal_admittance_force_authority_high_n: 6.0
+    internal_contact_target_mode: "push_gradient"        # targets: P = I - c g g^T
+    # stage 6 (GM, 2026-11-07): compliance is permitted from 2 N; its strength then
+    # follows the force smoothly (2 N -> 0, 6 N -> 1), so there is no jump at entry.
+    internal_admittance_enter_force_n: 2.0
+    internal_admittance_release_force_n: 1.5
+    internal_admittance_enter_probability: 0.60
+    internal_admittance_release_probability: 0.35
+    internal_admittance_transition_sec: 0.30
+    internal_admittance_wrench_timeout_sec: 0.25
+    internal_admittance_intent_timeout_sec: 0.50
+    internal_admittance_max_force_n: 30.0
+    internal_admittance_max_task_accel_m_s2: 6.0
+    internal_admittance_max_joint_accel_rad_s2: [2.5, 1.5, 1.5, 1.5, 1.5, 1.5]
+    internal_admittance_singular_damping_ratio: 0.05
+    internal_admittance_minimum_alignment_cosine: 0.50
+    internal_admittance_eigenvalue_floor: 1.0e-8
+    # Hardware diagnosis: publishes status/validity/force/activation/alignment
+    # and requested-versus-achieved Cartesian acceleration at 20 Hz.
+    internal_admittance_diagnostics_enabled: true
+    internal_admittance_diagnostics_rate_hz: 20.0
+    # v2 stage 4: contact latch + intent-gated proximity avoidance.
+    internal_admittance_latch_enabled: true
+    internal_avoidance_gate_enabled: true
+    internal_avoidance_key: "collision_gated"
+    internal_avoidance_transition_sec: 0.30
+    # 0.0 = avoidance fully off for an intentional approach (decided 2026-11-05).
+    internal_avoidance_weight_floor: 0.0
+    # stage 8 (2026-11-07): command guard 0.25 -> 0.35 rad/s only while the gated
+    # proximity avoidance is active (w > 0.5 and a proximity obstacle present);
+    # slewed at max_joint_accel. Compliance, return and idle keep 0.25.
+    internal_avoidance_guard_velocity_rad_s: 0.35
+    # stage 9 (goal 2, 2026-11-07): continuous intent. lambda (from the vision
+    # bridge) is held by contact force (full above 3 N, fading with tau 0.5 s
+    # below 1 N) instead of the boolean latch; compliance gate smoothstep on
+    # lambda_eff over 0.5..0.8 (the bridge's pre-intent cap 0.5 never opens it);
+    # avoidance weight 1 - lambda_eff. enter_probability / enter_force are unused.
+    internal_intent_mode: "evidence"
+    internal_intent_hold_force_low_n: 1.0
+    internal_intent_hold_force_high_n: 3.0
+    internal_intent_release_tau_sec: 0.5
+    internal_intent_compliance_low: 0.5
+    internal_intent_compliance_high: 0.8
+    # target metric scale floor^a: an intermediate compliance activation gives an
+    # intermediate target weight (linear scale was effectively a switch).
+    internal_contact_target_scale_mode: "geometric"
+    # v2 stage 5: SO(3) orientation leaf moved to a contact-gated external leaf.
+    internal_orientation_gate_enabled: true
+    internal_orientation_key: "orientation_gated"
+    internal_orientation_node: "tcp_orientation_so3"
+    visualization_rate: 20.0
+    publish_visualization: true
+    publish_goal_marker: true
+    publish_control_point_markers: true
+    # Legacy orange body-guard overlay is hidden by default; the canonical
+    # robot-body representation is the 22 cyan BodyControlPointSpec spheres.
+    publish_body_obstacle_markers: false
+    publish_end_effector_pose: false
+    publish_debug_state: false
+    # Use each BodyControlPointSpec radius so controller and Step 2 RViz match.
+    control_point_marker_diameter: 0.0
+    publish_repulsion_metric_markers: false
+    repulsion_metric_marker_min_norm: 0.01
+    repulsion_metric_marker_dot_diameter: 0.04
+
+    # TCP acceleration visualization
+    publish_tcp_accel_marker: true
+    tcp_accel_marker_topic: "tcp_accel_marker"
+    tcp_accel_marker_max_length: 0.15
+    tcp_accel_marker_norm_for_max_length: 2.0
+    tcp_accel_marker_min_norm: 0.001
+    enable_tangent_escape_rmp: false
+    # Independent numeric values. The fixed-cylinder ON/OFF profile now gives
+    # Escape the same base metric scale as Collision. The clearance margin
+    # remains independent from Collision parameters at runtime.
+    tangent_escape_rmp_clearance_margin: 0.0
+    # In risk_damped mode its effective rank-one metric is m_t * lambda * B.
+    # canonical_velocity-only compatibility gain (unused by risk_damped).
+    # This is a Cartesian tangent-task limit (m/s^2). The resolved joint
+    # acceleration still follows the independent global max_joint_accel limit.
+
+    # --- Escape RMP v2 ("tangent_ode") -------------------------------------
+    # Designed in canonical (a, M) form.  accel_max is a real tangential
+    # acceleration [m/s^2] and tangent_damping is a rate [1/s], so 1/b_e is the
+    # settling time and must stay far above the 5 ms control period.
+    # accel_sigma is wide (prevention) while metric_sigma is narrow (authority);
+    # gating the acceleration rather than the force is what keeps a bounded.
+    tangent_escape_ode_metric_max: 100000.0
+    tangent_escape_ode_metric_sigma: 0.03
+    tangent_escape_ode_accel_max: 500.0
+    tangent_escape_ode_accel_sigma: 0.08
+    tangent_escape_ode_budget_scale: 1.0
+    tangent_escape_ode_budget_recovery_time: 3.0
+    tangent_escape_ode_tangent_damping: 40.0
+    tangent_escape_ode_direction_rate: 3.0
+    tangent_escape_ode_risk_sigma: 0.06
+    tangent_escape_ode_weight_goal: 1.0
+    tangent_escape_ode_weight_velocity: 0.3
+    tangent_escape_ode_weight_risk: 1.0
+    tangent_escape_ode_weight_curvature: 1.5
+    tangent_escape_ode_axial_preference: 1.0
+    tangent_escape_ode_pocket_threshold: 0.6
+    tangent_escape_ode_pocket_epsilon: 0.1
+    tangent_escape_ode_activation_distance: 0.15
+    tangent_escape_ode_release_distance: 0.45
+    tangent_escape_ode_switch_hysteresis: 0.005
+    tangent_escape_ode_direction_memory_time: 1.0
+    # Stall memory: pushing hard while going nowhere accumulates a penalty
+    # on the directions already tried, so theta leaves a failing region
+    # instead of oscillating between two maxima of the score.
+    tangent_escape_ode_weight_stall: 2.0
+    tangent_escape_ode_stall_time_constant: 1.5
+    tangent_escape_ode_stall_speed: 0.02
+
+    # tangent_plane-only; listed so the overlay's "params" sentinel resolves.
+
+    # Compatibility/shared supervisor block. risk_damped ignores the old z-LPF,
+    # desired-velocity, drive-ramp, and RELEASE parameters, while it still uses
+    # intent, scoring, latch/handoff, max_speed, and failure-monitor settings.
+    # The ignored values remain parsed only so canonical_velocity can be used
+    # for an explicit rollback/A-B run; it is not selected by this profile.
+    # Ignore nominal directions below intent_on_speed. Between on/full,
+    # smoothly raise the confidence that the base RMP intends to move this CP.
+    # Bound one continuously active Escape episode. The timeout uses the same
+    # smooth lambda-down handoff as other releases; normal observed episodes
+    # currently finish within 5.44 s, so 12 s is a failsafe-only threshold.
+
+    publish_tangent_escape_rmp_data: false
+    publish_tangent_escape_dual_solve_data: false
+    tangent_escape_dual_solve_topic: "/tangent_escape_dual_solve"
+    publish_leaf_ablation_data: false
+    leaf_ablation_topic: "/rmp_leaf_ablation"
+
+    # Tangent escape activation and candidate selection.
+
+    # Escape/base stability certificate. Disabled in the normal production
+    # profile; the dedicated proof launch enables the finite-energy guard.
+    escape_stability_guard_enabled: false
+    # The tank always starts full, so this is both capacity and initial energy.
+    # Placeholder only. During gain calibration, override this with a large
+    # simulation-only budget so scale remains 1; after successful Escape runs,
+    # replace it with the measured mission requirement plus a validated margin.
+    escape_stability_tank_capacity: 0.25
+    escape_stability_scale_search_iterations: 16
+    escape_stability_power_tolerance: 0.000000001
+    publish_stability_certificate_data: false
+    stability_certificate_data_topic: "/rmp_stability_certificate"
+
+    publish_tangent_escape_geometry_debug: false
+    tangent_escape_geometry_data_topic: "/tangent_escape_geometry_data"
+    tangent_escape_geometry_marker_topic: "tangent_escape_geometry_markers"
+    tangent_escape_geometry_marker_length: 0.12
+    goal_x: 0.3
+    goal_y: 0.0
+    goal_z: 1.0
+    min_goal_z: 0.05
+    initialize_goal_from_first_state: true
+    safety_stop_on_min_z: false
+    workspace_floor_z: 0.0
+    min_link6_z: 0.03
+    min_tcp_z: 0.05
+    initial_q: [0.0, -2.0943951024, 1.5707963268, -2.617993878, -1.5707963268, 0.0]
+    default_q: [0.0, -2.0943951024, 1.5707963268, -2.617993878, -1.5707963268, 0.0]
+    # The CB2 controller reports wrist_3 as an unwrapped multi-turn angle. Keep
+    # its current branch commandable so startup does not clamp, for example,
+    # -384 deg to -360 deg and immediately trip the following-error guard.
+    joint_lower_limits_deg: [-360.0, -360.0, -180.0, -360.0, -360.0, -720.0]
+    joint_upper_limits_deg: [360.0, 360.0, 180.0, 360.0, 360.0, 720.0]
+    joint_limit_buffers: [0.01, 0.01, 0.01, 0.01, 0.01, 0.01]
+    backend_mode: "joint_command_topics"
+    # Set false only for read-only hardware observation. No UR10 command socket is opened.
+    hardware_command_enabled: true
+    hardware_state_topic: "/ur10/joint_states"
+    hardware_command_topic: "hardware_joint_command"
+    joint_state_topic: "/ur10/joint_states"
+    position_command_topic: "/ur10/targetJ"
+    dry_run_command_topic: "/rmp_dry_run_command"
+    publish_position_command: true
+    position_command_state_topic: "/rmp_position_command"
+    publish_rmp_accel_debug: false
+    rmp_joint_accel_topic: "/rmp_joint_accel"
+    rmp_tcp_accel_topic: "/rmp_tcp_accel"
+    # position: servoj(q), velocity: speedj(qd)
+    command_mode: "position"
+    # SpeedJ parameters used only when command_mode is velocity.
+    speedj_t1: 0.002
+    speedj_t2: 0.1
+    speedj_gain: 0.005
+    speedj_alpha: 0.1
+    publish_joint_states: true
+    joint_state_publish_topic: "joint_states"
+    publish_rmp_ee_pose: false
+    publish_goal_tf: false
+    goal_tf_parent_frame: "base_link"
+    goal_tf_child_frame: "rmp_goal_target"
+    enable_realtime: false
+    realtime_priority: 80
+    lock_memory: false
+    body_goal: [0.45, 0.0, 0.9]
+    orientation_goal: [0.0, 0.0, 1.0]
+    solve_method: "rmp2"
+    rmp_type: "canonical"
+    external_rmp:
+      topic_prefix: "external_rmp"
+      admittance:
+        # Populated internally from q_ctrl/qd_ctrl in this Stage-2 fork.
+        enabled: false
+        topic_prefix: "admittance"
+      target_gated:
+        # The graph key is populated inside the isolated controller fork.
+        # Keep the former ROS metric/acceleration subscriber disabled so no
+        # separately sampled target state can enter the solve.
+        enabled: false
+        topic_prefix: "target_gated"
+      collision_gated:
+        # Populated inside the v2 fork (internal_avoidance_*); no ROS input.
+        enabled: false
+        topic_prefix: "collision_gated"
+      orientation_gated:
+        # Populated inside the v2 fork (internal_orientation_*); no ROS input.
+        enabled: false
+        topic_prefix: "orientation_gated"
+    # RMP graph topology
+    graph:
+      node_names:
+        - cspace_target
+        - joint_limits
+        - joint_velocity_cap
+        - tcp_position
+        - target
+        - control_points
+        - collision
+        - self_collision
+        - tangent_escape
+        - damping
+        - admittance_external
+        - target_gated_external
+        - collision_gated_external
+        - orientation_gated_external
+        - body_link4
+        - tcp_axis_target_x
+        - tcp_axis_target_y
+        - tcp_axis_target_z
+        - tcp_orientation_so3
+      cspace_target:
+        parents: [root]
+        parent: root
+        task_map: cspace_target
+        leaf: cspace_target
+        # Isolate Cartesian target versus contact admittance in Stage 2.
+        # The predictive hard joint-position guard remains enabled.
+        enabled: false
+        target_key: goal
+        link_name: tool0
+        axis: "z"
+        handcrafted_leaf: none
+        identity_multiplier: 0.0
+      joint_limits:
+        parents: [root]
+        parent: root
+        task_map: joint_limit
+        leaf: joint_limit
+        # Disable continuous centering authority for this arbitration trial;
+        # hard predictive joint limits remain active in the command guard.
+        enabled: false
+        target_key: goal
+        link_name: tool0
+        axis: "z"
+        handcrafted_leaf: none
+        identity_multiplier: 0.0
+      joint_velocity_cap:
+        parents: [root]
+        parent: root
+        task_map: identity
+        leaf: joint_velocity_cap
+        enabled: true
+        target_key: goal
+        link_name: tool0
+        axis: "z"
+        handcrafted_leaf: none
+        identity_multiplier: 0.0
+      tcp_position:
+        parents: [root]
+        parent: root
+        task_map: tcp_position
+        leaf: none
+        enabled: true
+        target_key: goal
+        link_name: tool0
+        axis: "z"
+        handcrafted_leaf: none
+        identity_multiplier: 0.0
+      target:
+        parents: [tcp_position]
+        parent: tcp_position
+        task_map: identity
+        leaf: target
+        # Replaced in Stage 2 by the internally generated target_gated key.
+        # It has the same no-contact gains and uses this controller cycle's
+        # exact q_ctrl/qd_ctrl state.
+        enabled: false
+        target_key: goal
+        link_name: tool0
+        axis: "z"
+        handcrafted_leaf: none
+        identity_multiplier: 0.0
+      control_points:
+        parents: [root]
+        parent: root
+        task_map: control_points
+        leaf: none
+        enabled: true
+        target_key: goal
+        link_name: tool0
+        axis: "z"
+        handcrafted_leaf: none
+        identity_multiplier: 0.0
+      collision:
+        parents: [control_points]
+        parent: control_points
+        task_map: collision_distance
+        leaf: collision
+        enabled: true
+        target_key: goal
+        link_name: tool0
+        axis: "z"
+        handcrafted_leaf: none
+        identity_multiplier: 0.0
+      self_collision:
+        parents: [control_points]
+        parent: control_points
+        task_map: self_collision_distance
+        leaf: collision
+        enabled: false
+        target_key: goal
+        link_name: tool0
+        axis: "z"
+        handcrafted_leaf: none
+        identity_multiplier: 0.0
+      tangent_escape:
+        parents: [control_points]
+        parent: control_points
+        task_map: identity
+        leaf: tangent_escape
+        enabled: false
+        target_key: goal
+        link_name: tool0
+        axis: "z"
+        handcrafted_leaf: none
+        identity_multiplier: 0.0
+      damping:
+        parents: [root]
+        parent: root
+        task_map: identity
+        leaf: damping
+        enabled: true
+        target_key: goal
+        link_name: tool0
+        axis: "z"
+        handcrafted_leaf: none
+        identity_multiplier: 0.0
+      # Seventh policy: an externally computed joint-space admittance RMP.
+      # The external publisher supplies a 6x6 metric square root and a
+      # six-joint canonical acceleration. Missing input contributes exactly
+      # zero to the root resolve.
+      admittance_external:
+        parents: [root]
+        parent: root
+        task_map: identity
+        leaf: external
+        enabled: true
+        target_key: admittance
+        link_name: tool0
+        axis: "z"
+        handcrafted_leaf: none
+        identity_multiplier: 0.0
+      collision_gated_external:
+        # v2: proximity-sensor avoidance weighted by w = 1 - p_eff. The same
+        # obstacles are removed from the collision node above, so with w = 1
+        # the sum equals the production collision leaf.
+        parents: [root]
+        parent: root
+        task_map: identity
+        leaf: external
+        enabled: true
+        target_key: collision_gated
+        link_name: tool0
+        axis: "z"
+        handcrafted_leaf: none
+        identity_multiplier: 0.0
+      orientation_gated_external:
+        # v2 stage 5: SO(3) orientation target, scaled by the contact gate.
+        # The fork removes tcp_orientation_so3 from the main solver, so this
+        # equals the production orientation leaf whenever there is no contact.
+        parents: [root]
+        parent: root
+        task_map: identity
+        leaf: external
+        enabled: true
+        target_key: orientation_gated
+        link_name: tool0
+        axis: "z"
+        handcrafted_leaf: none
+        identity_multiplier: 0.0
+      # Stage-2-only identity injection point. The isolated controller fills
+      # target_gated internally before every root solve; no ROS external target
+      # publisher is used. After release it recovers and returns to the goal.
+      target_gated_external:
+        parents: [root]
+        parent: root
+        task_map: identity
+        leaf: external
+        enabled: true
+        target_key: target_gated
+        link_name: tool0
+        axis: "z"
+        handcrafted_leaf: none
+        identity_multiplier: 0.0
+      body_link4:
+        parents: [root]
+        parent: root
+        task_map: link_position
+        leaf: target
+        enabled: false
+        target_key: body_goal
+        link_name: wrist_1_link
+        axis: "z"
+        handcrafted_leaf: none
+        identity_multiplier: 0.0
+      tcp_axis_target_x:
+        parents: [root]
+        parent: root
+        task_map: link_orientation_axis
+        leaf: axis_target
+        enabled: false
+        target_key: orientation_goal_x
+        link_name: tool0
+        axis: "x"
+        handcrafted_leaf: none
+        identity_multiplier: 0.0
+      tcp_axis_target_y:
+        parents: [root]
+        parent: root
+        task_map: link_orientation_axis
+        leaf: axis_target
+        enabled: false
+        target_key: orientation_goal_y
+        link_name: tool0
+        axis: "y"
+        handcrafted_leaf: none
+        identity_multiplier: 0.0
+      tcp_axis_target_z:
+        parents: [root]
+        parent: root
+        task_map: link_orientation_axis
+        leaf: axis_target
+        enabled: false
+        target_key: orientation_goal_z
+        link_name: tool0
+        axis: "z"
+        handcrafted_leaf: none
+        identity_multiplier: 0.0
+      tcp_orientation_so3:
+        parents: [root]
+        parent: root
+        task_map: link_orientation
+        leaf: so3_orientation_target
+        enabled: true
+        target_key: orientation_goal
+        link_name: tool0
+        axis: "z"
+        handcrafted_leaf: none
+        identity_multiplier: 0.0
+
+    # UR10 body guard obstacles (spheres in each link's local frame)
+    # upper_arm: extends along local -X (0 to -0.612m)
+    # forearm: extends along local -X (0 to -0.572m), +Z offset at end
+    # wrist_1: extends along local -Y (0 to -0.116m)
+    # wrist_2: extends along local +Y (0 to +0.092m)
+    body_obstacles:
+      names:
+        - shoulder_guard_1
+        - shoulder_guard_2
+        - upper_arm_guard_1
+        - upper_arm_guard_2
+        - upper_arm_guard_3
+        - upper_arm_guard_4
+        - upper_arm_guard_5
+        - upper_arm_guard_6
+        - upper_arm_guard_7
+        - forearm_guard_1
+        - forearm_guard_2
+        - forearm_guard_3
+        - forearm_guard_4
+        - forearm_guard_5
+        - forearm_guard_6
+        - wrist1_guard_1
+        - wrist1_guard_2
+        - wrist1_guard_3
+        - wrist2_guard_1
+        - wrist2_guard_2
+        - wrist2_guard_3
+        - wrist3_guard_1
+        - wrist3_guard_2
+        - tool_guard_1
+      # Shoulder: compact cylinder around pan joint
+      shoulder_guard_1:
+        type: "ball"
+        link_name: "shoulder_link"
+        center: [0.0, 0.0, 0.0]
+        radius: 0.075
+      shoulder_guard_2:
+        type: "ball"
+        link_name: "shoulder_link"
+        center: [0.0, 0.0, -0.05]
+        radius: 0.075
+      # Upper arm: along local -X from 0 to -0.612
+      upper_arm_guard_1:
+        type: "ball"
+        link_name: "upper_arm_link"
+        center: [0.0, 0.0, 0.0]
+        radius: 0.07
+      upper_arm_guard_2:
+        type: "ball"
+        link_name: "upper_arm_link"
+        center: [-0.1, 0.0, 0.0]
+        radius: 0.065
+      upper_arm_guard_3:
+        type: "ball"
+        link_name: "upper_arm_link"
+        center: [-0.2, 0.0, 0.0]
+        radius: 0.06
+      upper_arm_guard_4:
+        type: "ball"
+        link_name: "upper_arm_link"
+        center: [-0.3, 0.0, 0.0]
+        radius: 0.06
+      upper_arm_guard_5:
+        type: "ball"
+        link_name: "upper_arm_link"
+        center: [-0.4, 0.0, 0.0]
+        radius: 0.06
+      upper_arm_guard_6:
+        type: "ball"
+        link_name: "upper_arm_link"
+        center: [-0.5, 0.0, 0.0]
+        radius: 0.06
+      upper_arm_guard_7:
+        type: "ball"
+        link_name: "upper_arm_link"
+        center: [-0.6, 0.0, 0.0]
+        radius: 0.065
+      # Forearm: along local -X from 0 to -0.572, slight +Z at end
+      forearm_guard_1:
+        type: "ball"
+        link_name: "forearm_link"
+        center: [0.0, 0.0, 0.0]
+        radius: 0.06
+      forearm_guard_2:
+        type: "ball"
+        link_name: "forearm_link"
+        center: [-0.115, 0.0, 0.03]
+        radius: 0.055
+      forearm_guard_3:
+        type: "ball"
+        link_name: "forearm_link"
+        center: [-0.23, 0.0, 0.06]
+        radius: 0.05
+      forearm_guard_4:
+        type: "ball"
+        link_name: "forearm_link"
+        center: [-0.345, 0.0, 0.09]
+        radius: 0.05
+      forearm_guard_5:
+        type: "ball"
+        link_name: "forearm_link"
+        center: [-0.46, 0.0, 0.12]
+        radius: 0.05
+      forearm_guard_6:
+        type: "ball"
+        link_name: "forearm_link"
+        center: [-0.57, 0.0, 0.16]
+        radius: 0.05
+      # Wrist 1: along local -Y from 0 to -0.116
+      wrist1_guard_1:
+        type: "ball"
+        link_name: "wrist_1_link"
+        center: [0.0, 0.0, 0.0]
+        radius: 0.045
+      wrist1_guard_2:
+        type: "ball"
+        link_name: "wrist_1_link"
+        center: [0.0, -0.058, 0.0]
+        radius: 0.045
+      wrist1_guard_3:
+        type: "ball"
+        link_name: "wrist_1_link"
+        center: [0.0, -0.115, 0.0]
+        radius: 0.04
+      # Wrist 2: along local +Y from 0 to +0.092
+      wrist2_guard_1:
+        type: "ball"
+        link_name: "wrist_2_link"
+        center: [0.0, 0.0, 0.0]
+        radius: 0.04
+      wrist2_guard_2:
+        type: "ball"
+        link_name: "wrist_2_link"
+        center: [0.0, 0.046, 0.0]
+        radius: 0.04
+      wrist2_guard_3:
+        type: "ball"
+        link_name: "wrist_2_link"
+        center: [0.0, 0.09, 0.0]
+        radius: 0.04
+      # Wrist 3: short end-effector mount
+      wrist3_guard_1:
+        type: "ball"
+        link_name: "wrist_3_link"
+        center: [0.0, 0.0, 0.0]
+        radius: 0.035
+      wrist3_guard_2:
+        type: "ball"
+        link_name: "wrist_3_link"
+        center: [0.0, 0.0, -0.04]
+        radius: 0.03
+      # Tool
+      tool_guard_1:
+        type: "ball"
+        link_name: "tool0"
+        center: [0.0, 0.0, 0.0]
+        radius: 0.025
+
+interactive_goal:
+  ros__parameters:
+    initial_x: 0.3
+    initial_y: 0.0
+    initial_z: 1.0
+    initial_q: [0.0, -2.0943951024, 1.5707963268, -2.617993878, -1.5707963268, 0.0]
+    initialize_from_joint_state: true
+    joint_state_topic: "/ur10/joint_states"
+
+obstacle_manager:
+  ros__parameters:
+    num_obstacles: 1
+    default_radius: 0.06
+    default_height: 0.8
+    default_positions: [-0.13920757174491882, -0.5425602197647095, 0.4573509991168976]
+
+proximity_obstacle_bridge:
+  ros__parameters:
+    fixed_frame: "base_link"
+    obstacle_topic: "obstacles"
+    visualization_obstacle_topic: "obstacle_markers"
+    publish_rate: 100.0
+    visualization_publish_rate: 20.0
+    publish_collision_obstacles: true
+    obstacle_radius: 0.08
+    obstacle_marker_lifetime: 0.25
+    # RViz-only memory of measured surface hit points. This is not collision input.
+    surface_patch_rows: 5
+    surface_patch_cols: 5
+    surface_patch_spacing: 0.03
+    surface_patch_sphere_radius: 0.03
+    # Surface hit point center: p_sensor + R_sensor * +X * range.
+    surface_patch_fixed_visualization: true
+    surface_patch_visualization_topic: "proximity_surface_patches"
+    surface_patch_memory_distance: 0.025
+    surface_patch_memory_max_markers: 1200
+    valid_margin: 0.001
+    range_scale: 0.001
+    minimum_hold_distance: 0.05
+    trigger_distance: 0.15
+    enable_proximity_distance_1_4: true
+    joint_state_topic: "/ur10/joint_states"
+    elbow_tof3_1_w_ignore_enabled: true
+    elbow_tof3_1_w_ignore_min_deg: -150.0
+    elbow_tof3_1_w_ignore_max_deg: -130.0
+    elbow_tof3_1_w_ignore_state_timeout: 0.5
+    elbow_tof3_1_w_ignore_clear_memory: true
+    sensor_enabled:
+      - true   # proximity_distance1 -> tof6_1_L
+      - true   # proximity_distance2 -> tof6_1_F
+      - true   # proximity_distance3 -> tof6_1_R
+      - true   # proximity_distance4 -> tof6_1_U
+      - true  # proximity_distance6 -> tof_S
+      - true   # proximity_distance7 -> tof_E
+      - true   # proximity_distance8 -> tof_N
+      - true   # proximity_distance5 -> tof_W
+      - false   # proximity_distance12 -> tof3_1_S
+      - false  # proximity_distance9 -> tof3_1_W
+      - false   # proximity_distance10 -> tof3_1_N
+      - false # proximity_distance11 -> tof3_1_E
+      - false  # proximity_distance13 -> tof2_N
+      - false  # proximity_distance14 -> tof2_W
+      - false  # proximity_distance15 -> tof2_S
+      - false  # proximity_distance16 -> tof2_E
+      - false # proximity_distance17 -> tof2_E
+      - false  # proximity_distance18 -> tof2_S
+      - false   # proximity_distance19 -> tof2_W
+      - false  # proximity_distance20 -> tof2_N
+    trigger_distances:
+      - 0.5
+      - 0.5
+      - 0.5
+      - 0.5
+      - 0.30
+      - 0.30
+      - 0.30
+      - 0.30
+      - 0.30
+      - 0.30
+      - 0.30
+      - 0.30
+      - 0.30
+      - 0.30
+      - 0.30
+      - 0.30
+      - 0.30
+      - 0.30
+      - 0.30
+      - 0.30
+    range_topics:
+      - "proximity_distance1"
+      - "proximity_distance2"
+      - "proximity_distance3"
+      - "proximity_distance4"
+      - "proximity_distance6"
+      - "proximity_distance7"
+      - "proximity_distance8"
+      - "proximity_distance5"
+      - "proximity_distance12"
+      - "proximity_distance9"
+      - "proximity_distance10"
+      - "proximity_distance11"
+      - "proximity_distance13"
+      - "proximity_distance14"
+      - "proximity_distance15"
+      - "proximity_distance16"
+      - "proximity_distance17"
+      - "proximity_distance18"
+      - "proximity_distance19"
+      - "proximity_distance20"
+    sensor_frames:
+      - "tof6_1_L"
+      - "tof6_1_F"
+      - "tof6_1_R"
+      - "tof6_1_U"
+      - "tof_S"
+      - "tof_E"
+      - "tof_N"
+      - "tof_W"
+      - "tof3_1_S"
+      - "tof3_1_W"
+      - "tof3_1_N"
+      - "tof3_1_E"
+      - "tof2_N"
+      - "tof2_W"
+      - "tof2_S"
+      - "tof2_E"
+      - "tof2_E"
+      - "tof2_S"
+      - "tof2_W"
+      - "tof2_N"
+    obstacle_radii:
+      - 0.04
+      - 0.04
+      - 0.04
+      - 0.04
+      - 0.04
+      - 0.04
+      - 0.04
+      - 0.04
+      - 0.04
+      - 0.04
+      - 0.04
+      - 0.04
+      - 0.04
+      - 0.04
+      - 0.04
+      - 0.04
+      - 0.04
+      - 0.04
+      - 0.04
+      - 0.04
+
+ur10_api_bridge:
+  ros__parameters:
+    # Used by ur10_api_bridge.py only when command_mode is velocity.
+    # speedj_t1: 0.01
+    # speedj_t2: 0.1
+    # speedj_gain: 0.5
+    # speedj_alpha: 0.5
+    speedj_t1: 0.002
+    speedj_t2: 0.1
+    speedj_gain: 0.005
+    speedj_alpha: 0.1
+    publish_only_new_state_packets: true
+    state_max_raw_velocity_rad_s: 6.0
+    state_position_step_margin_rad: 0.01
+
+ur10_direct_bridge:
+  ros__parameters:
+    # Used by the standalone ur10_direct_bridge only when command_mode is velocity.
+    command_mode: "velocity"
+    # speedj_t1: 0.01
+    # speedj_t2: 0.1
+    # speedj_gain: 0.5
+    # speedj_alpha: 0.5
+    speedj_t1: 0.02
+    speedj_t2: 0.2
+    speedj_gain: 0.05
+    speedj_alpha: 0.1

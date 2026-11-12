@@ -1,0 +1,30 @@
+nonlinear_surface_contactsensing:
+  ros__parameters:
+    filename: "230921_path_1"
+
+    # Y2FT_AQ publishes geometry_msgs/msg/WrenchStamped on this topic.
+    contact_sensor_topic: "/ur10skku/ftdata"
+
+    # Transform force and torque from the calibrated wrench reference frame
+    # into the mesh/contact frame before calculating the line of action.
+    # The V-shape launch publishes base_link -> vshape_wrench as a static TF.
+    use_wrench_tf: true
+    contact_frame: "base_link"
+    wrench_source_frame: "vshape_wrench"
+    wrench_tf_timeout_sec: 0.05
+
+    # 3x4 homogeneous transform rows. The launch file supplies mesh_directory
+    # from the installed REACT_intrinsic package share directory.
+    mesh_transformation:
+      - -1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - -1.0
+      - 0.0

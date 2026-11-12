@@ -1,0 +1,36 @@
+nonlinear_surface_contactsensing:
+  ros__parameters:
+    filename: "230921_path_1"
+
+    # Y2FT_AQ publishes geometry_msgs/msg/WrenchStamped on this topic.
+    contact_sensor_topic: "/ur10skku/ftdata"
+
+    # 3x4 homogeneous transform rows. The launch file supplies mesh_directory
+    # from the installed REACT_intrinsic package share directory.
+    mesh_transformation:
+      - 0.0
+      - 1.0
+      - 0.0
+      - 0.064
+      - -1.0
+      - 0.0
+      - 0.0
+      - 0.11
+      - 0.0
+      - 0.0
+      - 1.0
+      - 0.1
+
+    # mesh_transformation:
+    #   - 0.7071
+    #   - -0.7071
+    #   - 0.0
+    #   - 0.0
+    #   - 0.7071
+    #   - 0.7071
+    #   - 0.0
+    #   - 0.0
+    #   - 0.0
+    #   - 0.0
+    #   - 1.0
+    #   - 0.01

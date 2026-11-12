@@ -1,0 +1,27 @@
+gated_target_external_rmp:
+  ros__parameters:
+    publish_rate_hz: 125.0
+
+    # Match the Stage-2 Cartesian target policy while exposing its metric as a
+    # contact-gated external leaf. At full contact the metric is 0.1% of its
+    # no-contact value; the admittance activation already supplies a 0.30 s
+    # smoothstep in both directions.
+    p_gain: 40.0
+    d_gain: 120.0
+    accel_norm_eps: 0.08
+    metric_alpha_length_scale: 0.01
+    min_metric_alpha: 0.1
+    max_metric_scalar: 500.0
+    min_metric_scalar: 100.0
+    contact_metric_floor: 0.001
+
+    joint_state_timeout_sec: 0.10
+    goal_timeout_sec: 0.50
+    activation_timeout_sec: 0.20
+    eigenvalue_floor: 1.0e-8
+
+    joint_state_topic: "/UR10_right/joint_states"
+    goal_pose_topic: "/goal_pose"
+    goal_position_topic: "/goal_position"
+    activation_topic: "/admittance_rmp/activation"
+    output_prefix: "/escape_on/external_rmp/target_gated"

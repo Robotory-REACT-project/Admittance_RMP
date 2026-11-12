@@ -1,0 +1,17 @@
+nonlinear_surface_contactsensing:
+  ros__parameters:
+    filename: "230921_path_1"
+    contact_sensor_topic: "/ur10skku/ftdata"
+    mesh_transformation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.085
+      - 0.0
+      - 1.0
+      - 0.0
+      - 0.085
+      - 0.0
+      - 0.0
+      - 1.0
+      - 0.067
